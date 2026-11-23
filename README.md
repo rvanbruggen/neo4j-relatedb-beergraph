@@ -1,6 +1,6 @@
 # Belgian Beer Graph on relate
 
-**Version:** 1.1.0 · [Changelog](CHANGELOG.md) · [Live demo](https://rvanbruggen.github.io/neo4j-relatedb-beergraph/)
+**Version:** 1.1.1 · [Changelog](CHANGELOG.md) · [Live demo](https://rvanbruggen.github.io/neo4j-relatedb-beergraph/)
 
 A browser-only remake of the classic Neo4j Belgian beer graph demo, running on
 [relate](https://relatedb.ai/), Neo4j's embedded graph database for agents,
@@ -10,6 +10,11 @@ browser and persists to OPFS.
 The data comes from the Dutch Wikipedia page
 [Lijst van Belgische bieren](https://nl.wikipedia.org/wiki/Lijst_van_Belgische_bieren)
 (about 2,300 beers, 340 breweries).
+
+Built for the [Relate by Neo4j Hackathon](https://relate.devpost.com/) ("Context,
+connected"). This is an independent project. It is not made, sponsored or
+endorsed by Neo4j; "Neo4j" and "Relate" are trademarks of Neo4j, Inc. and are
+used here only to name the product the project is built on.
 
 ## What's in it
 
@@ -44,13 +49,40 @@ The data comes from the Dutch Wikipedia page
 
 ## Running it
 
+**Quickest:** open the [live demo](https://rvanbruggen.github.io/neo4j-relatedb-beergraph/)
+in Chrome (or another Chromium-based browser). Nothing to install, no account
+needed. The first visit imports the beer list into relate in under a second;
+later visits reopen it from OPFS.
+
+**Locally** you need [Node.js](https://nodejs.org/) 22.18 or later (24 LTS
+recommended), npm, and Chrome.
+
 ```bash
+git clone https://github.com/rvanbruggen/neo4j-relatedb-beergraph.git
+cd neo4j-relatedb-beergraph
 npm install
-npm run dev        # http://localhost:5173
-npm test           # loads the data into relate (WASM, under Node) and runs every query
-npm run ingest     # re-fetch Wikipedia into public/beers.json
-npm run build      # static site in dist/
+npm run dev        # open http://localhost:5173
 ```
+
+Other commands:
+
+```bash
+npm test           # loads the data into relate (WASM, under Node) and runs every query the app uses
+npm run build      # static site in dist/ (serve it with: npx vite preview)
+npm run ingest     # re-fetch the Wikipedia list into public/beers.json (optional; a copy is committed)
+```
+
+**Trying it out:** on *Recommend*, search for a beer (try `westmalle`, `kriek`
+or the typo `chimay blau~`), switch between *Graph walk* and *Vector
+neighbours*, and click beers in the graph. Press *I like this* on a few beers,
+then open *My taste*. On *Path finder*, connect two beers (for example *Duvel*
+and *Orval*). Every panel has a *show Cypher* link with the exact query and how
+many milliseconds relate took.
+
+**The sommelier is optional.** It needs an Anthropic API key, which the visitor
+pastes into the page (calls are billed to that key, and Haiku 5.5, the cheapest
+model, is the default). Every other feature works without a key and without any
+LLM.
 
 Pushing to `main` deploys to GitHub Pages through `.github/workflows/deploy.yml`.
 
@@ -68,6 +100,52 @@ Pushing to `main` deploys to GitHub Pages through `.github/workflows/deploy.yml`
 - The Wikipedia table is hand-maintained, so parsing is heuristic. Style words
   that only appear in a beer's name ("Westmalle Tripel") are added as
   `inferred` types.
+
+## What it uses (hackathon statement)
+
+**Relate capabilities**
+
+- The WebAssembly build (`@relate/relate-wasm` 1.2.0), embedded in a dedicated
+  Web Worker: the database runs in process in the browser, with no server.
+- Durable OPFS storage (`RelateDb.open('opfs://beergraph')`), with a fallback
+  to an in-memory database when another tab holds the store.
+- Cypher 25: batched `UNWIND`/`MERGE` loading, `CALL` subqueries, `COUNT {}`
+  and `EXISTS {}` subqueries, list comprehensions, and `SHORTEST` paths over
+  quantified relationship patterns (Path finder).
+- A full-text index (`standard-folding` analyzer for accent-insensitive
+  search, plus fuzzy and wildcard terms) for the search boxes and the agent's
+  `search_beers` tool.
+- A vector index (cosine, exact nearest neighbours) with an in-search filter on
+  `stillBrewed`, for "vector neighbours", the "taste centre" recommendation and
+  "closest living twin of a discontinued beer".
+- The graph as agent memory: the sommelier reads and writes
+  `(:Drinker)-[:LIKES|DISLIKES]->(:Beer)` and logs each conversation as
+  `(:Drinker)-[:ASKED]->(:Question)-[:LOOKED_AT]->(:Beer)`, persisted in OPFS.
+- The per-statement timings in relate's result envelope (`elapsed_ms`), shown
+  next to every result.
+
+**Third-party tools and data**
+
+- Beer data: Dutch Wikipedia, *Lijst van Belgische bieren* (CC BY-SA 4.0),
+  fetched through the MediaWiki API and parsed by `src/parse.js`.
+- [Vite](https://vite.dev/) 8 and TypeScript 7 (build), [force-graph](https://github.com/vasturiano/force-graph)
+  1.52 (MIT, graph drawing), the [Anthropic TypeScript SDK](https://github.com/anthropics/anthropic-sdk-typescript)
+  1.13 (Apache-2.0, sommelier), GitHub Pages and GitHub Actions (hosting).
+
+**AI tools**
+
+- The project was built with [Claude Code](https://claude.com/claude-code)
+  (Claude Opus 5.5) as a pair programmer: it wrote most of the code, the
+  Wikipedia parser and the tests, directed and reviewed by the author, who
+  chose the features, the design and the data model.
+- In the app, the optional sommelier calls the Claude API (Claude Haiku 5.5 by
+  default) with tools that query relate.
+
+**Earlier work.** The idea is a remake of the author's own Belgian beer graph
+demo for Neo4j, last published as a
+[GraphGist](https://neo4j.com/graphgists/scraping-wikipedia-and-loading-into-a-graphgist/).
+No code from that demo is reused: everything in this repository was written
+from 2026-11-23 onwards, during the contest period.
 
 ## Version Tracking
 
