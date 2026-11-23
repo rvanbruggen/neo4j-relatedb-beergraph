@@ -56,22 +56,28 @@
         </div>
         <div id="beer-card" class="beer-card"></div>
       </div>
-      <div class="two-col">
-        <div class="card" data-fam="red">
-          <h2>Graph walk <small>shared types, brewery, fermentation and strength</small></h2>
-          <ol id="rec-graph" class="recs"></ol>
-          <div class="qmeta" id="qm-graph"></div>
+      <div class="rec-grid">
+        <div class="card rec-lists" data-fam="red" id="rec-card">
+          <div class="subtabs" role="tablist" aria-label="Recommendation method">
+            <button role="tab" id="st-graph" data-mode="graph" data-fam="red" aria-controls="panel-graph" aria-selected="true">Graph walk</button>
+            <button role="tab" id="st-vector" data-mode="vector" data-fam="blue" aria-controls="panel-vector" aria-selected="false" tabindex="-1">Vector neighbours</button>
+          </div>
+          <div role="tabpanel" id="panel-graph" aria-labelledby="st-graph">
+            <p class="panel-intro">Walks from the beer through its types, brewery and fermentation, and scores every beer it reaches by how much they share and how close the strength is.</p>
+            <ol id="rec-graph" class="recs"></ol>
+            <div class="qmeta" id="qm-graph"></div>
+          </div>
+          <div role="tabpanel" id="panel-vector" aria-labelledby="st-vector" hidden>
+            <p class="panel-intro">Nearest neighbours in “taste space” (style, fermentation and strength), found with relate’s built-in vector index.</p>
+            <ol id="rec-vector" class="recs"></ol>
+            <div class="qmeta" id="qm-vector"></div>
+          </div>
         </div>
-        <div class="card" data-fam="blue">
-          <h2>Vector neighbours <small>nearest in “taste space”, using the built-in vector index</small></h2>
-          <ol id="rec-vector" class="recs"></ol>
-          <div class="qmeta" id="qm-vector"></div>
+        <div class="card rec-viz" data-fam="yellow">
+          <h2>Neighbourhood <small>the beer, what it connects to, and who else connects there. Top picks from the active list have a red outline. Click a beer to jump to it.</small></h2>
+          <div id="viz-rec" class="viz"></div>
+          <div class="legend" id="legend-rec"></div>
         </div>
-      </div>
-      <div class="card" data-fam="yellow">
-        <h2>Neighbourhood <small>the beer, what it connects to, and who else connects there. Click a beer to jump to it.</small></h2>
-        <div id="viz-rec" class="viz"></div>
-        <div class="legend" id="legend-rec"></div>
       </div>
     </section>
 

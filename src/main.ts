@@ -75,6 +75,9 @@ const state = {
   onlyBrewed: true,
   drinker: localGet('beergraph-drinker') || 'you',
 };
+type RecMode = 'graph' | 'vector';
+let recMode: RecMode = localGet('beergraph-recmode') === 'vector' ? 'vector' : 'graph';
+const lastRecs: Record<RecMode, any[]> = { graph: [], vector: [] };
 
 function localGet(k: string) { try { return localStorage.getItem(k); } catch { return null; } }
 function localSet(k: string, v: string | null) {
@@ -151,7 +154,7 @@ attachSearch(searchInput, $<HTMLUListElement>('#search-results'), (row) => {
 });
 $<HTMLInputElement>('#only-brewed').addEventListener('change', (e) => {
   state.onlyBrewed = (e.target as HTMLInputElement).checked;
-  if (state.beerId != null) selectBeer(state.beerId, false);
+  if (state.beerId != null) selectBeer(state.beerId);
 });
 
 function recList(ol: HTMLElement, rows: any[], opts: { score?: (r: any) => string; why?: (r: any) => string; empty?: string } = {}) {
@@ -215,8 +218,38 @@ async function selectBeer(id: number, pushViz = true) {
   qmeta($('#qm-graph'), graph, Q.similarGraph, params);
   recList($('#rec-vector'), vector.rows, { score: (r) => r.score.toFixed(3) });
   qmeta($('#qm-vector'), vector, Q.similarVector(state.onlyBrewed), { id });
-  if (pushViz) drawNeighbourhood(id, graph.rows);
+  lastRecs.graph = graph.rows;
+  lastRecs.vector = vector.rows;
+  if (pushViz) drawNeighbourhood(id);
 }
+
+// ---- Graph walk | Vector neighbours sub-tabs ----
+
+const subtabs = [...document.querySelectorAll<HTMLButtonElement>('.subtabs button')];
+function setRecMode(mode: RecMode, focus = false) {
+  recMode = mode;
+  localSet('beergraph-recmode', mode);
+  for (const b of subtabs) {
+    const on = b.dataset.mode === mode;
+    b.setAttribute('aria-selected', String(on));
+    b.tabIndex = on ? 0 : -1;
+    if (on && focus) b.focus();
+  }
+  $('#panel-graph').hidden = mode !== 'graph';
+  $('#panel-vector').hidden = mode !== 'vector';
+  $('#rec-card').dataset.fam = mode === 'graph' ? 'red' : 'blue';
+  legend($('#legend-rec'));
+  if (state.beerId != null) drawNeighbourhood(state.beerId);
+}
+subtabs.forEach((b) => {
+  b.addEventListener('click', () => setRecMode(b.dataset.mode as RecMode));
+  b.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      setRecMode(recMode === 'graph' ? 'vector' : 'graph', true);
+    }
+  });
+});
 
 // ---------------------------------------------------------------------------
 // Graph visualisation (force-graph on canvas)
@@ -235,15 +268,17 @@ const LABEL_NAMES: Record<string, string> = { Beer: 'Beer', Brewery: 'Brewery', 
 
 function legend(el: HTMLElement) {
   el.innerHTML = Object.keys(LABEL_COLOURS).map((k) => `<span style="--c:${LABEL_COLOURS[k]()[0]}">${LABEL_NAMES[k]}</span>`).join('')
-    + `<span style="--c:${css('--yellow')}; outline: 3px solid ${css('--red')}; outline-offset: -1px">recommended</span>`;
+    + `<span style="--c:${css('--yellow')}; outline: 3px solid ${css('--red')}; outline-offset: -1px">top ${recMode === 'graph' ? 'graph-walk' : 'vector'} picks</span>`
+    + (recMode === 'vector' ? `<span class="dash">vector similarity (not stored in the graph)</span>` : '');
 }
 
 function makeGraph(el: HTMLElement) {
   const g = new ForceGraph<VNode, VLink>(el)
     .backgroundColor('#ffffff')
     .nodeId('id')
-    .linkColor(() => 'rgba(17,17,17,0.35)')
-    .linkWidth(1.2)
+    .linkColor((l) => (l.type === 'SIMILAR' ? css('--blue') : 'rgba(17,17,17,0.35)'))
+    .linkWidth((l) => (l.type === 'SIMILAR' ? 2 : 1.2))
+    .linkLineDash((l) => (l.type === 'SIMILAR' ? [4, 3] : null))
     .nodeRelSize(5)
     .cooldownTicks(120)
     .nodeLabel((n) => `${LABEL_NAMES[n.label] ?? n.label}: ${n.name}`)
@@ -280,7 +315,8 @@ function makeGraph(el: HTMLElement) {
     .onNodeClick((n) => { if (n.beerId != null) selectBeer(n.beerId); });
   g.d3Force('charge')?.strength(-90);
   sizeGraph(g, el);
-  new ResizeObserver(() => sizeGraph(g, el)).observe(el);
+  const refit = debounce(() => g.zoomToFit(300, 30), 150);
+  new ResizeObserver(() => { sizeGraph(g, el); refit(); }).observe(el);
   return g;
 }
 function sizeGraph(g: ForceGraph<VNode, VLink>, el: HTMLElement) {
@@ -290,9 +326,13 @@ function sizeGraph(g: ForceGraph<VNode, VLink>, el: HTMLElement) {
 let recGraph: ForceGraph<VNode, VLink> | null = null;
 let pathGraph: ForceGraph<VNode, VLink> | null = null;
 
-async function drawNeighbourhood(id: number, recs: any[]) {
+let drawSeq = 0;
+async function drawNeighbourhood(id: number) {
+  const mode = recMode;
+  const recs = lastRecs[mode];
+  const token = ++drawSeq;
   const env = await q(Q.neighbourhood, { id });
-  if (env.error || !env.rows.length) return;
+  if (token !== drawSeq || env.error || !env.rows.length) return;
   const nodes = new Map<string, VNode>();
   const links: VLink[] = [];
   const recIds = new Set(recs.slice(0, 5).map((r) => r.id));
@@ -313,13 +353,18 @@ async function drawNeighbourhood(id: number, recs: any[]) {
     const oid = `b${r.id}`;
     if (nodes.has(oid)) continue;
     nodes.set(oid, { id: oid, label: 'Beer', name: r.name, beerId: r.id, rec: true });
-    const conn = await q(`MATCH (:Beer {id: $a})-[:HAS_TYPE|BREWED_BY|HAS_FERMENTATION]->(x)<-[r:HAS_TYPE|BREWED_BY|HAS_FERMENTATION]-(:Beer {id: $b})
-                          RETURN labels(x)[0] AS l, x.name AS n, type(r) AS t`, { a: id, b: r.id });
+    const conn = await q(`MATCH (:Beer {id: $a})-[:HAS_TYPE|BREWED_BY|HAS_FERMENTATION|HAS_ALCOHOLPERCENTAGE]->(x)<-[r:HAS_TYPE|BREWED_BY|HAS_FERMENTATION|HAS_ALCOHOLPERCENTAGE]-(:Beer {id: $b})
+                          RETURN labels(x)[0] AS l, coalesce(x.name, toString(x.value) + '%') AS n, type(r) AS t`, { a: id, b: r.id });
     for (const c of conn.rows) {
       const hub = `${c.l}:${c.n}`;
       if (nodes.has(hub)) links.push({ source: oid, target: hub, type: c.t });
     }
   }
+  // Vector similarity is computed, not stored: draw it as a dashed link from the beer.
+  if (mode === 'vector') {
+    for (const r of recs.slice(0, 5)) links.push({ source: main, target: `b${r.id}`, type: 'SIMILAR' });
+  }
+  if (token !== drawSeq) return;
   recGraph ??= makeGraph($('#viz-rec'));
   recGraph.graphData({ nodes: [...nodes.values()], links });
   recGraph.onEngineStop(() => recGraph!.zoomToFit(400, 30));
@@ -691,7 +736,7 @@ async function boot() {
     if (initInfo.drinkerRatings) pill('memory', `<b>${initInfo.drinkerRatings}</b> ratings remembered`, '');
   }
   console.info(`beer graph ready in ${fmtMs(performance.now() - t0)}`);
-  legend($('#legend-rec'));
+  setRecMode(recMode);
   $('#mem-drinker').textContent = state.drinker;
 
   // Default beer: Westmalle Tripel, a fine place to start.
