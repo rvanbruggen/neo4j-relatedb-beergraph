@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <title>Belgian Beer Graph</title>
+  <meta name="description" content="A real-time Belgian beer recommender and sommelier agent running entirely in the browser on the relate embedded graph database (WASM)." />
+  <script>
+    // Same hidden switch as personal.bruggen.com: ?theme=modern for the modern Mondrian palette, ?theme=classic to go back.
+    (function () {
+      var k = 'bruggen-theme', t = null;
+      try {
+        var q = new URLSearchParams(location.search).get('theme');
+        if (q === 'modern') localStorage.setItem(k, 'modern');
+        else if (q === 'classic' || q === 'mondrian') localStorage.removeItem(k);
+        t = q === 'modern' ? 'modern' : (q === 'classic' || q === 'mondrian') ? null : localStorage.getItem(k);
+      } catch (e) { t = /[?&]theme=modern(&|$)/.test(location.search) ? 'modern' : null; }
+      if (t === 'modern') document.documentElement.setAttribute('data-theme', 'modern');
+    })();
+  </script>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <header class="site">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <div>
+        <h1>Belgian Beer Graph</h1>
+        <p class="sub">A beer recommender and sommelier running entirely in your browser on <a href="https://relatedb.ai/" target="_blank" rel="noopener">relate</a>, the embedded graph database, compiled to WebAssembly.</p>
+      </div>
+    </div>
+    <div class="status" id="status" aria-live="polite">
+      <span class="pill" id="pill-engine">starting engine…</span>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button role="tab" data-tab="recommend" data-fam="yellow" aria-selected="true">Recommend</button>
+    <button role="tab" data-tab="sommelier" data-fam="red">Sommelier</button>
+    <button role="tab" data-tab="taste" data-fam="blue">My taste</button>
+    <button role="tab" data-tab="path" data-fam="yellow">Path finder</button>
+    <button role="tab" data-tab="explore" data-fam="red">Cypher console</button>
+    <button role="tab" data-tab="data" data-fam="blue">Data &amp; storage</button>
+  </nav>
+
+  <main>
+    <!-- Recommend -->
+    <section class="tab" id="tab-recommend">
+      <div class="card searchcard" data-fam="yellow">
+        <div class="searchbar">
+          <label for="search" class="visually-hidden">Search beers</label>
+          <input id="search" type="search" autocomplete="off" placeholder="Search 2,300 Belgian beers… try westmalle, kriek, chimay blau~ or schteng" />
+          <label class="toggle"><input type="checkbox" id="only-brewed" checked /> only beers still brewed</label>
+          <ul id="search-results" class="dropdown" role="listbox" hidden></ul>
+        </div>
+        <div id="beer-card" class="beer-card"></div>
+      </div>
+      <div class="two-col">
+        <div class="card" data-fam="red">
+          <h2>Graph walk <small>shared types, brewery, fermentation and strength</small></h2>
+          <ol id="rec-graph" class="recs"></ol>
+          <div class="qmeta" id="qm-graph"></div>
+        </div>
+        <div class="card" data-fam="blue">
+          <h2>Vector neighbours <small>nearest in “taste space”, using the built-in vector index</small></h2>
+          <ol id="rec-vector" class="recs"></ol>
+          <div class="qmeta" id="qm-vector"></div>
+        </div>
+      </div>
+      <div class="card" data-fam="yellow">
+        <h2>Neighbourhood <small>the beer, what it connects to, and who else connects there. Click a beer to jump to it.</small></h2>
+        <div id="viz-rec" class="viz"></div>
+        <div class="legend" id="legend-rec"></div>
+      </div>
+    </section>
+
+    <!-- Sommelier -->
+    <section class="tab" id="tab-sommelier" hidden>
+      <div class="card keycard" data-fam="red">
+        <h2>Sommelier agent <small>Claude, called directly from this page, with tools that query the relate graph in your browser. The graph is its knowledge and its memory.</small></h2>
+        <div class="keyrow">
+          <label for="api-key">Anthropic API key</label>
+          <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…" />
+          <label for="model" class="visually-hidden">Model</label>
+          <select id="model"></select>
+          <label class="toggle"><input type="checkbox" id="remember-key" /> remember in this browser</label>
+          <button id="forget-key">Forget key</button>
+        </div>
+        <p class="hint">Your key goes only from this browser to <code>api.anthropic.com</code>. There is no server in between. It stays in memory unless you tick “remember”, which keeps it in this browser’s local storage. Calls are billed to your account.</p>
+      </div>
+      <div class="chat-grid">
+        <div class="card chat" data-fam="yellow">
+          <div id="chat-log" class="chat-log" aria-live="polite"></div>
+          <form id="chat-form" class="chat-form">
+            <label for="chat-input" class="visually-hidden">Ask the sommelier</label>
+            <textarea id="chat-input" rows="2" placeholder="I love Westmalle Tripel and Duvel, but nothing too sour. What should I try next?"></textarea>
+            <div class="row">
+              <button type="submit" class="primary" id="chat-send">Ask <kbd>↵</kbd></button>
+              <button type="button" id="chat-new">New conversation</button>
+              <span class="qmeta inline" id="chat-status"></span>
+            </div>
+          </form>
+          <div class="starters" id="starters"></div>
+        </div>
+        <div class="card" data-fam="blue">
+          <h2>Agent memory <small>what the agent recorded about <b id="mem-drinker"></b>, stored as nodes and relationships in OPFS</small></h2>
+          <ul id="mem-ratings" class="recs plain"></ul>
+          <h2 class="mt">Earlier questions</h2>
+          <ul id="mem-questions" class="recs plain"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Taste -->
+    <section class="tab" id="tab-taste" hidden>
+      <div class="card drinker-bar" data-fam="blue">
+        <label for="drinker">Drinking as</label>
+        <input id="drinker" list="drinker-list" autocomplete="off" />
+        <datalist id="drinker-list"></datalist>
+        <span class="hint">Likes and dislikes are stored as <code>(:Drinker)-[:LIKES]-&gt;(:Beer)</code> in the graph. With OPFS they survive a page reload. Add a second drinker to see “drinkers like you”.</span>
+      </div>
+      <div class="two-col">
+        <div class="card" data-fam="yellow">
+          <h2>Your ratings</h2>
+          <ul id="ratings" class="recs plain"></ul>
+        </div>
+        <div class="card" data-fam="red">
+          <h2>Because you liked… <small>graph walk from your likes, minus your dislikes</small></h2>
+          <ol id="rec-forme" class="recs"></ol>
+          <div class="qmeta" id="qm-forme"></div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="card" data-fam="blue">
+          <h2>Your taste centre <small>average of your liked beers’ vectors, then a vector search</small></h2>
+          <ol id="rec-formevec" class="recs"></ol>
+          <div class="qmeta" id="qm-formevec"></div>
+        </div>
+        <div class="card" data-fam="yellow">
+          <h2>Drinkers like you <small>what drinkers who share your likes also liked</small></h2>
+          <ol id="rec-peers" class="recs"></ol>
+          <div class="qmeta" id="qm-peers"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Path -->
+    <section class="tab" id="tab-path" hidden>
+      <div class="card path-pickers" data-fam="yellow">
+        <div class="picker"><label for="path-from">From</label><input id="path-from" autocomplete="off" placeholder="e.g. Duvel" /><ul class="dropdown" hidden></ul></div>
+        <span class="arrow" aria-hidden="true">→</span>
+        <div class="picker"><label for="path-to">To</label><input id="path-to" autocomplete="off" placeholder="e.g. Westvleteren 12" /><ul class="dropdown" hidden></ul></div>
+      </div>
+      <div class="card" data-fam="blue">
+        <h2>Shortest path <small>through breweries, beer types and alcohol percentages</small></h2>
+        <div id="path-chain" class="chain"></div>
+        <div id="viz-path" class="viz small"></div>
+        <div class="qmeta" id="qm-path"></div>
+      </div>
+    </section>
+
+    <!-- Explore -->
+    <section class="tab" id="tab-explore" hidden>
+      <div class="card" data-fam="red">
+        <h2>Cypher console <small>any Cypher 25 query, straight into the engine in your browser</small></h2>
+        <div class="samples" id="samples"></div>
+        <label for="cypher" class="visually-hidden">Cypher query</label>
+        <textarea id="cypher" spellcheck="false" rows="8"></textarea>
+        <div class="row">
+          <button id="run" class="primary">Run <kbd>⌘↵</kbd></button>
+          <span class="qmeta inline" id="qm-console"></span>
+        </div>
+        <div id="console-out" class="table-wrap"></div>
+      </div>
+    </section>
+
+    <!-- Data -->
+    <section class="tab" id="tab-data" hidden>
+      <div class="two-col">
+        <div class="card" data-fam="yellow">
+          <h2>Dataset</h2>
+          <dl id="dataset" class="facts"></dl>
+          <div class="row">
+            <button id="refresh-wiki" class="primary">Re-import live from Wikipedia</button>
+          </div>
+          <p class="hint">Fetches the current wikitext of <em>Lijst van Belgische bieren</em> from the Wikipedia API, parses it in the browser and reloads the graph. Ratings and agent memory are kept.</p>
+          <div id="import-log" class="log"></div>
+        </div>
+        <div class="card" data-fam="red">
+          <h2>Storage &amp; engine</h2>
+          <dl id="engine" class="facts"></dl>
+          <div class="row">
+            <button id="reset-store" class="danger">Wipe the OPFS store</button>
+          </div>
+          <p class="hint">Wiping deletes the graph, all ratings and the agent’s memory from this browser. The next load imports the bundled <code>beers.json</code> again.</p>
+        </div>
+      </div>
+      <div class="card" data-fam="blue">
+        <h2>Node counts</h2>
+        <div id="counts" class="counts"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Beer data: <a href="https://nl.wikipedia.org/wiki/Lijst_van_Belgische_bieren" target="_blank" rel="noopener">Lijst van Belgische bieren</a>, Wikipedia contributors, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>.
+    Engine: <a href="https://relatedb.ai/" target="_blank" rel="noopener">relate</a> (Apache-2.0). After the original Neo4j beer graph demo by Rik Van Bruggen.
+  </footer>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
