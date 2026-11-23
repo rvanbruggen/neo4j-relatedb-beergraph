@@ -1,5 +1,7 @@
 # Belgian Beer Graph on relate
 
+**Version:** 1.0.0 · [Changelog](CHANGELOG.md) · [Live demo](https://rvanbruggen.github.io/neo4j-relatedb-beergraph/)
+
 A browser-only remake of the classic Neo4j Belgian beer graph demo, running on
 [relate](https://relatedb.ai/), Neo4j's embedded graph database for agents,
 compiled to WebAssembly. No server: the database runs in a Web Worker in your
@@ -66,6 +68,20 @@ Pushing to `main` deploys to GitHub Pages through `.github/workflows/deploy.yml`
 - The Wikipedia table is hand-maintained, so parsing is heuristic. Style words
   that only appear in a beer's name ("Westmalle Tripel") are added as
   `inferred` types.
+
+## Version Tracking
+
+The version follows `a.b.c` and is released with the `/bump` process
+(`/bump major|minor|dot`), which commits, tags `v<version>` and pushes. The
+version lives in these places:
+
+- `package.json` and `package-lock.json` (`"version"`): the source of truth
+- `README.md`: the **Version:** line at the top
+- `CHANGELOG.md`: one row per release, newest first
+
+The app footer shows the version too, but it reads it from `package.json` at
+build time (`__APP_VERSION__` in `vite.config.ts`), so it needs no manual edit.
+Every push to `main` redeploys GitHub Pages.
 
 ## License
 

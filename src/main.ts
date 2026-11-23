@@ -668,6 +668,9 @@ async function renderMemory() {
 // ---------------------------------------------------------------------------
 // Boot
 
+const versionEl = $('#app-version');
+versionEl.innerHTML = ` · <a href="https://github.com/rvanbruggen/neo4j-relatedb-beergraph/releases/tag/v${__APP_VERSION__}" target="_blank" rel="noopener">v${__APP_VERSION__}</a>`;
+
 async function boot() {
   const t0 = performance.now();
   initInfo = await call<InitInfo>('init');

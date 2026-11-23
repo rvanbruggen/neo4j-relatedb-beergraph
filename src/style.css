@@ -265,3 +265,4 @@ footer { padding: 18px clamp(16px, 3vw, 32px) 28px; color: var(--muted); font-si
   .arrow { display: none; }
   .chat-log { padding-right: 0; }
 }
+.version a { font-weight: 700; }
