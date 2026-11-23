@@ -42,6 +42,7 @@
     <button role="tab" data-tab="path" data-fam="yellow">Path finder</button>
     <button role="tab" data-tab="explore" data-fam="red">Cypher console</button>
     <button role="tab" data-tab="data" data-fam="blue">Data &amp; storage</button>
+    <button role="tab" data-tab="about" data-fam="yellow">About</button>
   </nav>
 
   <main>
@@ -205,6 +206,49 @@
       <div class="card" data-fam="blue">
         <h2>Node counts</h2>
         <div id="counts" class="counts"></div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="tab" id="tab-about" hidden>
+      <div class="about-grid">
+        <div class="card about-intro" data-fam="yellow">
+          <h2>Why a beer graph, in a browser?</h2>
+          <p>I make no excuses: I am a salesperson, and for about ten years I sold graphs at Neo4j. And one of my favourite ways to explain what a graph database actually does was always... beer. Belgian beer, to be precise.</p>
+          <p>Back in 2013 I took the Wikipedia list of Belgian beers and loaded it into a very simple graph: beers, breweries, beer types and alcohol percentages. That's it. And yet - it turned out to be a wonderful way to show people how connected data lets you spot patterns that you would never see in a table. I have shown that demo to so many people over the years, and even told the story on stage at Monki Gras (that's the video on this page).</p>
+          <p>The BeerGraph kept coming back, too: in Neo4j Bloom, with the security features of Neo4j 4.0, and in yet another way of importing that Wikipedia page. All of those articles are listed below.</p>
+          <p>So when Neo4j launched <a href="https://relatedb.ai/" target="_blank" rel="noopener">relate</a> - an embedded graph database for agents that even runs inside your browser as WebAssembly - I really could not resist. How hard could it be to put the whole BeerGraph in a browser tab? This page is the result: no server, no install, just relate running in a Web Worker and keeping its data in your browser's own storage. On top of the classic graph recommendations I added vector similarity, a path finder and a little sommelier agent that uses the graph as its memory. I built it together with Claude Code for the <a href="https://relate.devpost.com/" target="_blank" rel="noopener">Relate by Neo4j Hackathon</a>, and it was tons of fun.</p>
+          <p>Hope you enjoy it as much as I did - and please, drink responsibly!</p>
+          <p class="signoff">Cheers<br />Rik</p>
+        </div>
+        <div class="card about-video" data-fam="red">
+          <h2>The talk that started it <small>Monki Gras 2013: “Neo4j sales, beer, graph - 3 related crafts”, by RedMonk Tech Events</small></h2>
+          <div class="video">
+            <iframe src="https://www.youtube-nocookie.com/embed/Z3qs_vqZbiY" title="Rik Van Bruggen: Neo4j sales, beer, graph - 3 related crafts at Monki Gras 2013" loading="lazy" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          </div>
+          <p class="hint"><a href="https://www.youtube.com/watch?v=Z3qs_vqZbiY" target="_blank" rel="noopener">Watch on YouTube</a></p>
+        </div>
+        <div class="card" data-fam="blue">
+          <h2>The beergraph articles <small>from my blog, oldest first</small></h2>
+          <ul class="links">
+            <li><a href="https://personal.bruggen.com/blog/2013/01/fun-with-beer-and-graphs/" target="_blank" rel="noopener">Fun with beer - and graphs</a><span>January 2013 · the original (some of the old videos no longer play)</span></li>
+            <li><a href="https://personal.bruggen.com/blog/2018/05/part-12-graphs-are-bloom-ing/" target="_blank" rel="noopener">Part 1/2: graphs are bloom-ing</a><span>May 2018 · the BeerGraph in Neo4j Bloom</span></li>
+            <li><a href="https://personal.bruggen.com/blog/2018/05/part-22-graphs-are-bloom-ing/" target="_blank" rel="noopener">Part 2/2: graphs are bloom-ing</a><span>May 2018</span></li>
+            <li><a href="https://personal.bruggen.com/blog/2018/05/graphs-are-blooming-again/" target="_blank" rel="noopener">Graphs are blooming - again!</a><span>May 2018</span></li>
+            <li><a href="https://personal.bruggen.com/blog/2020/01/securing-my-beergraph-with-neo4j-40/" target="_blank" rel="noopener">Securing my beergraph with Neo4j 4.0</a><span>January 2020</span></li>
+            <li><a href="https://personal.bruggen.com/blog/2021/10/rebeergraph-importing-belgian-beergraph/" target="_blank" rel="noopener">ReBeerGraph: importing the Belgian beergraph straight from a Wikipedia HTML page</a><span>October 2021</span></li>
+            <li><a href="https://neo4j.com/graphgists/scraping-wikipedia-and-loading-into-a-graphgist/" target="_blank" rel="noopener">Scraping Wikipedia and loading it into a GraphGist</a><span>on neo4j.com</span></li>
+          </ul>
+          <p class="hint">All of them are also on the <a href="https://personal.bruggen.com/blog/tags/beergraph/" target="_blank" rel="noopener">beergraph tag</a> of my blog.</p>
+        </div>
+        <div class="card" data-fam="yellow">
+          <h2>Find me online</h2>
+          <ul class="links">
+            <li><a href="https://personal.bruggen.com/" target="_blank" rel="noopener">personal.bruggen.com</a><span>my website: blog, podcast, books and projects</span></li>
+            <li><a href="https://www.linkedin.com/in/rikvanbruggen" target="_blank" rel="noopener">LinkedIn</a><span>linkedin.com/in/rikvanbruggen</span></li>
+            <li><a href="https://github.com/rvanbruggen/neo4j-relatedb-beergraph" target="_blank" rel="noopener">This project on GitHub</a><span>source code, setup instructions and changelog (Apache-2.0)</span></li>
+          </ul>
+        </div>
       </div>
     </section>
   </main>
