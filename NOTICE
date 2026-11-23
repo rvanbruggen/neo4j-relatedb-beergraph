@@ -1,0 +1,16 @@
+Belgian Beer Graph on relate
+Copyright 2026 Rik Van Bruggen
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Third-party material:
+
+- public/beers.json is derived from "Lijst van Belgische bieren" on the Dutch
+  Wikipedia (https://nl.wikipedia.org/wiki/Lijst_van_Belgische_bieren), by
+  Wikipedia contributors, licensed under CC BY-SA 4.0
+  (https://creativecommons.org/licenses/by-sa/4.0/). That file is distributed
+  under CC BY-SA 4.0, not under the Apache License.
+
+- relate (@relate/relate-wasm) is licensed under the Apache License 2.0.
+- force-graph is licensed under the MIT License.
+- @anthropic-ai/sdk is licensed under the Apache License 2.0.

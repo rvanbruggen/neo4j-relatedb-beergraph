@@ -67,4 +67,10 @@ Pushing to `main` deploys to GitHub Pages through `.github/workflows/deploy.yml`
   that only appear in a beer's name ("Westmalle Tripel") are added as
   `inferred` types.
 
-Beer data © Wikipedia contributors, CC BY-SA 4.0. relate is Apache-2.0.
+## License
+
+The code in this repository is licensed under the [Apache License 2.0](LICENSE),
+the same license as relate. See [NOTICE](NOTICE) for details.
+
+The beer data in `public/beers.json` comes from Wikipedia and stays under
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), by Wikipedia contributors.
