@@ -34,6 +34,12 @@ The point is the theme of the hackathon: context, connected. The same small grap
 https://github.com/rvanbruggen/neo4j-relatedb-beergraph
 (public, Apache-2.0, topics `relate` and `relate-neo4j-hackathon`)
 
+## Path to the persistent store in your repo
+
+`data/beergraph.relate` (see `data/README.md`)
+
+relate runs as WebAssembly in the browser and persists to OPFS (`RelateDb.open('opfs://beergraph')`, which relate stores as `relate/beergraph/`: a catalog plus 64 data slots). That store survives reloads and browser restarts, but it lives in the browser profile. `data/beergraph.relate` is a snapshot of those exact store files, exported with *Data & storage → Download database file*. It holds the full graph (2,321 beers, 339 breweries, 246 types, with the full-text and vector indexes) plus a `demo` drinker with saved likes. Load it in the live demo with *Upload database file…*. The demo video also shows the graph reopening from OPFS after a reload.
+
 ## Setup instructions
 
 See "Running it" in the README. In short: open the live demo in Chrome, or `npm install && npm run dev` with Node.js 22.18 or later. `npm test` loads the data into relate and runs every query the app uses.

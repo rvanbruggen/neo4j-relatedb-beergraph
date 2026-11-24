@@ -90,6 +90,15 @@ LLM.
 
 Pushing to `main` deploys to GitHub Pages through `.github/workflows/deploy.yml`.
 
+## Persistent store
+
+The live store is in the browser's OPFS, under `relate/beergraph/` (a catalog
+and 64 data slots). A saved copy is in the repo:
+[`data/beergraph.relate`](data/beergraph.relate). It holds the full graph plus
+a `demo` drinker with a few likes. Load it with *Data & storage → Upload
+database file…*. See [data/README.md](data/README.md) for what's inside and the
+file format.
+
 ## Notes and limits
 
 - relate's browser build is documented as tested in Chrome only. OPFS needs a
@@ -112,7 +121,8 @@ Pushing to `main` deploys to GitHub Pages through `.github/workflows/deploy.yml`
 - The WebAssembly build (`@relate/relate-wasm` 1.2.0), embedded in a dedicated
   Web Worker: the database runs in process in the browser, with no server.
 - Durable OPFS storage (`RelateDb.open('opfs://beergraph')`), with a fallback
-  to an in-memory database when another tab holds the store.
+  to an in-memory database when another tab holds the store. A saved copy of
+  the store is committed as [`data/beergraph.relate`](data/README.md).
 - Cypher 25: batched `UNWIND`/`MERGE` loading, `CALL` subqueries, `COUNT {}`
   and `EXISTS {}` subqueries, list comprehensions, and `SHORTEST` paths over
   quantified relationship patterns (Path finder).
