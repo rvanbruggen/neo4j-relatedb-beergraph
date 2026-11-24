@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Mondrian BeerGraph: a glass of beer (foam over yellow) in an ink grid, with red and blue tiles beside it -->
+  <rect width="32" height="32" fill="#111"/>
+  <rect x="2" y="2" width="18" height="7" fill="#f5f2ea"/>
+  <rect x="2" y="11" width="18" height="19" fill="#f6c90e"/>
+  <rect x="22" y="2" width="8" height="12" fill="#d62718"/>
+  <rect x="22" y="16" width="8" height="6" fill="#f5f2ea"/>
+  <rect x="22" y="24" width="8" height="6" fill="#1d4e9e"/>
+</svg>
