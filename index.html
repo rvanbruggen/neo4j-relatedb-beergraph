@@ -201,6 +201,14 @@
             <button id="reset-store" class="danger">Wipe the OPFS store</button>
           </div>
           <p class="hint">Wiping deletes the graph, all ratings and the agent’s memory from this browser. The next load imports the bundled <code>beers.json</code> again.</p>
+          <h3>Backup &amp; restore</h3>
+          <div class="row">
+            <button id="download-db" class="primary">Download database file</button>
+            <button id="upload-db">Upload database file…</button>
+            <input id="upload-db-file" type="file" accept=".relate,application/gzip" hidden>
+          </div>
+          <p class="hint">The download is relate’s own store from this browser (the OPFS files, gzipped into one <code>.relate</code> file), with the graph, your ratings and the sommelier’s memory. Upload it later, in another browser or after clearing site data, to continue where you left off. Uploading replaces the graph in this browser.</p>
+          <div id="backup-log" class="log"></div>
         </div>
       </div>
       <div class="card" data-fam="blue">

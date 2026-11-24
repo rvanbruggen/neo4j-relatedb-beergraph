@@ -503,7 +503,7 @@ async function renderData() {
     <dt>Fetched</dt><dd>${esc(m.fetched ? new Date(m.fetched).toLocaleString() : '')}</dd>
     <dt>Beers</dt><dd>${esc(m.beers)}</dd>`;
   $('#engine').innerHTML = `
-    <dt>Engine</dt><dd>relate 1.2.0 (WebAssembly, in a dedicated worker)</dd>
+    <dt>Engine</dt><dd>relate ${__RELATE_VERSION__} (WebAssembly, in a dedicated worker)</dd>
     <dt>Storage</dt><dd>${initInfo.persistent ? 'OPFS <code>opfs://beergraph</code>, durable across reloads' : `in memory only (${esc(initInfo.storageError ?? 'OPFS unavailable')})`}</dd>
     <dt>WASM start</dt><dd>${fmtMs(initInfo.wasmMs)}</dd>
     <dt>Open store</dt><dd>${fmtMs(initInfo.openMs)}</dd>
@@ -558,6 +558,55 @@ $('#reset-store').addEventListener('click', async () => {
   if (!confirm('Delete the beer graph, all ratings and the agent memory from this browser?')) return;
   await call('reset');
   location.reload();
+});
+
+// Backup and restore of relate's store files
+const backupLog = $('#backup-log');
+const blog = (t: string) => (backupLog.textContent += t + '\n');
+const fmtSize = (n: number) => n > 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${(n / 1024).toFixed(0)} KB`;
+
+$('#download-db').addEventListener('click', async () => {
+  const btn = $<HTMLButtonElement>('#download-db');
+  btn.disabled = true;
+  backupLog.textContent = '';
+  try {
+    const t = performance.now();
+    const { bytes, header } = await call<{ bytes: ArrayBuffer; header: { beers: number; drinkerRatings: number; files: { size: number }[] } }>('snapshot');
+    const raw = header.files.reduce((s, f) => s + f.size, 0);
+    const name = `beergraph-${new Date().toISOString().slice(0, 10)}.relate`;
+    const url = URL.createObjectURL(new Blob([bytes], { type: 'application/gzip' }));
+    const a = Object.assign(document.createElement('a'), { href: url, download: name });
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    blog(`Saved ${name}: ${header.beers.toLocaleString()} beers, ${header.drinkerRatings} ratings, ${header.files.length} store files (${fmtSize(raw)}, ${fmtSize(bytes.byteLength)} gzipped) in ${fmtMs(performance.now() - t)}`);
+  } catch (e) {
+    blog(`Download failed: ${(e as Error).message}`);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+const uploadInput = $<HTMLInputElement>('#upload-db-file');
+$('#upload-db').addEventListener('click', () => uploadInput.click());
+uploadInput.addEventListener('change', async () => {
+  const file = uploadInput.files?.[0];
+  uploadInput.value = '';
+  if (!file) return;
+  if (!confirm(`Replace the beer graph, ratings and agent memory in this browser with ${file.name}?`)) return;
+  backupLog.textContent = '';
+  const btn = $<HTMLButtonElement>('#upload-db');
+  btn.disabled = true;
+  try {
+    blog(`Reading ${file.name} (${fmtSize(file.size)})…`);
+    const t = performance.now();
+    const bytes = await file.arrayBuffer();
+    const r = await call<{ created: string; appVersion: string; restoredBeers: number; restoredRatings: number }>('restore', { bytes });
+    blog(`Restored ${r.restoredBeers.toLocaleString()} beers and ${r.restoredRatings} ratings from ${r.created.slice(0, 16).replace('T', ' ')} (app ${r.appVersion}) in ${fmtMs(performance.now() - t)}. Reloading…`);
+    setTimeout(() => location.reload(), 1200);
+  } catch (e) {
+    blog((e as Error).message);
+    btn.disabled = false;
+  }
 });
 
 async function refreshCounts() {

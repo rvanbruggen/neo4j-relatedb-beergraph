@@ -1,6 +1,6 @@
 # Belgian Beer Graph on relate
 
-**Version:** 1.2.0 · [Changelog](CHANGELOG.md) · [Live demo](https://rvanbruggen.github.io/neo4j-relatedb-beergraph/)
+**Version:** 1.3.0 · [Changelog](CHANGELOG.md) · [Live demo](https://rvanbruggen.github.io/neo4j-relatedb-beergraph/)
 
 A browser-only remake of the classic Neo4j Belgian beer graph demo, running on
 [relate](https://relatedb.ai/), Neo4j's embedded graph database for agents,
@@ -33,7 +33,9 @@ used here only to name the product the project is built on.
   types and alcohol percentages.
 - **Cypher console**: run any query, with sample queries included.
 - **Data & storage**: re-import live from Wikipedia (parsed in the browser),
-  engine timings, and wiping the OPFS store.
+  engine timings, wiping the OPFS store, and downloading or uploading the
+  whole relate store as one `.relate` file (graph, ratings and agent memory),
+  so you can clear your browser or switch machines and carry on later.
 - **About**: the story behind the BeerGraph, links to the original BeerGraph
   articles (2013-2021), the Monki Gras 2013 talk, and where to find the author.
 
