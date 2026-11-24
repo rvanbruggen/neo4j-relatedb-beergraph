@@ -34,6 +34,14 @@ The point is the theme of the hackathon: context, connected. The same small grap
 https://github.com/rvanbruggen/neo4j-relatedb-beergraph
 (public, Apache-2.0, topics `relate` and `relate-neo4j-hackathon`)
 
+## Which Relate mode does your project use?
+
+Directory: a durable OPFS store in the browser (`opfs://beergraph`, kept as the directory `relate/beergraph/`), with an in-memory fallback only when another tab already holds it.
+
+## Why did you choose this mode?
+
+The app runs entirely in the browser with no server, so a durable OPFS directory is the only way for the graph, the drinker's likes and the sommelier's memory to survive reloads and restarts. It also reopens in about 250 ms instead of importing again. An in-memory database would forget the agent's memory every time the page reloads.
+
 ## Path to the persistent store in your repo
 
 `data/beergraph.relate` (see `data/README.md`)

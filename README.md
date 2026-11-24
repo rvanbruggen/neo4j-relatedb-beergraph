@@ -1,6 +1,6 @@
 # Belgian Beer Graph on relate
 
-**Version:** 1.3.1 · [Changelog](CHANGELOG.md) · [Live demo](https://rvanbruggen.github.io/neo4j-relatedb-beergraph/)
+**Version:** 1.3.2 · [Changelog](CHANGELOG.md) · [Live demo](https://rvanbruggen.github.io/neo4j-relatedb-beergraph/)
 
 A browser-only remake of the classic Neo4j Belgian beer graph demo, running on
 [relate](https://relatedb.ai/), Neo4j's embedded graph database for agents,
@@ -89,6 +89,21 @@ model, is the default). Every other feature works without a key and without any
 LLM.
 
 Pushing to `main` deploys to GitHub Pages through `.github/workflows/deploy.yml`.
+
+## How it uses Relate
+
+**Mode: directory.** relate runs as WebAssembly in a dedicated Web Worker and
+opens a durable store with `RelateDb.open('opfs://beergraph')`. In the
+browser's OPFS that store is a directory, `relate/beergraph/`, holding a
+catalog and 64 data slot files. If another tab already holds the store, the
+app falls back to an in-memory database for that tab only.
+
+**Why this mode:** the app has no server, so the graph has to live in the
+browser and still be there next time. A durable OPFS directory keeps the beer
+graph, your likes and the sommelier's memory across reloads and restarts, and
+reopens in about 250 ms instead of importing from scratch. An in-memory
+database would forget the drinker's taste and the agent's memory on every
+reload.
 
 ## Persistent store
 
