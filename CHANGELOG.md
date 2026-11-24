@@ -2,6 +2,7 @@
 
 | Version | Date | Changes |
 |---|---|---|
+| **1.3.1** | 2026-11-24 | Mondrian favicon (a glass of beer in an ink grid with red and blue tiles) and a matching home-screen icon for iPhone and iPad. The Devpost submission draft is now in `docs/`. |
 | **1.3.0** | 2026-11-24 | Backup and restore on the Data & storage tab: download relate's own OPFS store (graph, ratings and sommelier memory) as one gzipped `.relate` file, and upload it again in another browser or after clearing site data. Uploads are checked, and the previous graph is put back if relate cannot open the file. The engine line now shows relate's version from the build. |
 | **1.2.0** | 2026-11-23 | New About tab: the story behind the BeerGraph, the Monki Gras 2013 talk (embedded from YouTube's no-cookie domain), links to all the BeerGraph blog articles from 2013 to 2021 and the GraphGist, and links to the author's website, LinkedIn and this repository. |
 | **1.1.1** | 2026-11-23 | Relate by Neo4j Hackathon compliance: README statement of the relate capabilities, third-party tools and AI tools used, disclosure of earlier work, fuller setup instructions and a walkthrough for judges; footer note that the project is independent and not endorsed by Neo4j, with a link to the source. |
