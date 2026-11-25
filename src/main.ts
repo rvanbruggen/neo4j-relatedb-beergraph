@@ -4,6 +4,14 @@ import { parseWikitext } from './parse.js';
 import { MODELS, Sommelier, type ToolEvent } from './sommelier';
 import type { InitInfo } from './worker';
 
+// Installable app (PWA): register the service worker in production builds only,
+// so the Vite dev server is never served from a stale cache.
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch((err) => console.warn('service worker not registered', err));
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Worker client: the relate database lives in a dedicated worker (OPFS).
 

@@ -36,6 +36,10 @@ used here only to name the product the project is built on.
   engine timings, wiping the OPFS store, and downloading or uploading the
   whole relate store as one `.relate` file (graph, ratings and agent memory),
   so you can clear your browser or switch machines and carry on later.
+- **Installable app (PWA)**: on a phone, use *Add to Home Screen* (iOS Safari)
+  or *Install app* (Chrome on Android) to run it full-screen from its own icon.
+  After one online visit it also works offline; only the sommelier and the
+  Wikipedia re-import need a connection.
 - **About**: the story behind the BeerGraph, links to the original BeerGraph
   articles (2013-2021), the Monki Gras 2013 talk, and where to find the author.
 
