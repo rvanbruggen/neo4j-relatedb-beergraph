@@ -95,10 +95,25 @@ function localSet(k: string, v: string | null) {
 // ---------------------------------------------------------------------------
 // Tabs
 
-const tabs = [...document.querySelectorAll<HTMLButtonElement>('.tabs button')];
+const tabs = [...document.querySelectorAll<HTMLButtonElement>('.tabs button[data-tab]')];
+const tabBar = $('.tabs');
+const moreBtn = $<HTMLButtonElement>('#more-btn');
+const mainEl = $('main');
+function setMoreOpen(open: boolean) {
+  tabBar.classList.toggle('open', open);
+  moreBtn.setAttribute('aria-expanded', String(open));
+}
 function showTab(name: string) {
+  const changed = document.body.dataset.tab !== name;
   for (const b of tabs) b.setAttribute('aria-selected', String(b.dataset.tab === name));
   for (const s of document.querySelectorAll<HTMLElement>('.tab')) s.hidden = s.id !== `tab-${name}`;
+  // Mobile: the "More" button stands in for the tabs in its menu.
+  const inMore = tabs.find((b) => b.dataset.tab === name && b.closest('.more-menu'));
+  moreBtn.classList.toggle('on', !!inMore);
+  if (inMore) moreBtn.dataset.fam = inMore.dataset.fam; else delete moreBtn.dataset.fam;
+  setMoreOpen(false);
+  document.body.dataset.tab = name;
+  if (changed) mainEl.scrollTop = 0;
   history.replaceState(null, '', `${location.search}#${name}`);
   if (name === 'taste') renderTaste();
   if (name === 'data') renderData();
@@ -107,6 +122,9 @@ function showTab(name: string) {
   if (name === 'path' && pathGraph) setTimeout(() => sizeGraph(pathGraph!, $('#viz-path')), 0);
 }
 tabs.forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab!)));
+moreBtn.addEventListener('click', () => setMoreOpen(!tabBar.classList.contains('open')));
+document.addEventListener('click', (e) => { if (!(e.target as HTMLElement).closest('.tabs')) setMoreOpen(false); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMoreOpen(false); });
 window.addEventListener('hashchange', () => {
   const t = location.hash.slice(1);
   if (tabs.some((b) => b.dataset.tab === t && b.getAttribute('aria-selected') !== 'true')) showTab(t);
@@ -180,6 +198,7 @@ document.addEventListener('click', (e) => {
   showTab('recommend');
   selectBeer(+li.dataset.id!);
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  mainEl.scrollTo({ top: 0, behavior: 'smooth' }); // mobile: main is the scroller
 });
 
 async function selectBeer(id: number, pushViz = true) {
@@ -249,6 +268,17 @@ function setRecMode(mode: RecMode, focus = false) {
   legend($('#legend-rec'));
   if (state.beerId != null) drawNeighbourhood(state.beerId);
 }
+// ---- Mobile: list or neighbourhood graph, one at a time ----
+
+const mviewTabs = [...document.querySelectorAll<HTMLButtonElement>('.mview button')];
+function setMobileView(view: string) {
+  $('#tab-recommend').dataset.mview = view;
+  for (const b of mviewTabs) b.setAttribute('aria-selected', String(b.dataset.mview === view));
+  localSet('beergraph-mview', view);
+}
+mviewTabs.forEach((b) => b.addEventListener('click', () => setMobileView(b.dataset.mview!)));
+setMobileView(localGet('beergraph-mview') === 'graph' ? 'graph' : 'list');
+
 subtabs.forEach((b) => {
   b.addEventListener('click', () => setRecMode(b.dataset.mode as RecMode));
   b.addEventListener('keydown', (e) => {
@@ -645,7 +675,21 @@ const applyKey = () => {
   sommelier.setKey(k);
   localSet('beergraph-anthropic-key', rememberKey.checked && k ? k : null);
   chatEmptyState();
+  // Mobile: once a key is set, fold the key settings into one line.
+  $('#tab-sommelier').classList.toggle('has-key', sommelier.ready);
+  updateKeyToggle();
 };
+const keyToggle = $<HTMLButtonElement>('#key-toggle');
+function updateKeyToggle() {
+  const open = $('#tab-sommelier').classList.contains('key-open');
+  const model = modelSelect.selectedOptions[0]?.textContent ?? '';
+  keyToggle.textContent = open ? 'Hide key settings ▴' : `Key set · ${model} ▾`;
+  keyToggle.setAttribute('aria-expanded', String(open));
+}
+keyToggle.addEventListener('click', () => { $('#tab-sommelier').classList.toggle('key-open'); updateKeyToggle(); });
+modelSelect.addEventListener('change', updateKeyToggle);
+// Mobile: the chat fills the screen under the key card, so track its height.
+new ResizeObserver(() => $('#tab-sommelier').style.setProperty('--key-h', `${$('.keycard').offsetHeight}px`)).observe($('.keycard'));
 keyInput.addEventListener('change', applyKey);
 rememberKey.addEventListener('change', applyKey);
 $('#forget-key').addEventListener('click', () => { keyInput.value = ''; rememberKey.checked = false; applyKey(); });
@@ -777,7 +821,7 @@ async function boot() {
   const t0 = performance.now();
   initInfo = await call<InitInfo>('init');
   const storage = initInfo.persistent ? 'OPFS' : 'memory';
-  pill('engine', `relate ready in <b>${fmtMs(initInfo.wasmMs + initInfo.openMs)}</b> · ${storage}`, initInfo.persistent ? 'ok' : 'warn');
+  pill('engine', `relate <span class="wide">ready in </span><b>${fmtMs(initInfo.wasmMs + initInfo.openMs)}</b> · ${storage}`, initInfo.persistent ? 'ok' : 'warn');
   if (!initInfo.persistent) {
     pill('storage', 'not persistent: is the demo open in another tab?', 'warn');
   }

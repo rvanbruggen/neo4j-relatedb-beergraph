@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="color-scheme" content="light" />
   <title>Belgian Beer Graph</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -48,9 +48,12 @@
     <button role="tab" data-tab="sommelier" data-fam="red">Sommelier</button>
     <button role="tab" data-tab="taste" data-fam="blue">My taste</button>
     <button role="tab" data-tab="path" data-fam="yellow">Path finder</button>
-    <button role="tab" data-tab="explore" data-fam="red">Cypher console</button>
-    <button role="tab" data-tab="data" data-fam="blue">Data &amp; storage</button>
-    <button role="tab" data-tab="about" data-fam="yellow">About</button>
+    <div class="more-menu" id="more-menu">
+      <button role="tab" data-tab="explore" data-fam="red">Cypher console</button>
+      <button role="tab" data-tab="data" data-fam="blue">Data &amp; storage</button>
+      <button role="tab" data-tab="about" data-fam="yellow">About</button>
+    </div>
+    <button type="button" class="more-btn" id="more-btn" aria-haspopup="true" aria-expanded="false" aria-controls="more-menu">More</button>
   </nav>
 
   <main>
@@ -64,6 +67,10 @@
           <ul id="search-results" class="dropdown" role="listbox" hidden></ul>
         </div>
         <div id="beer-card" class="beer-card"></div>
+      </div>
+      <div class="mview" role="tablist" aria-label="Show">
+        <button role="tab" data-mview="list" data-fam="red" aria-selected="true">Recommendations</button>
+        <button role="tab" data-mview="graph" data-fam="yellow" aria-selected="false">Graph</button>
       </div>
       <div class="rec-grid">
         <div class="card rec-lists" data-fam="red" id="rec-card">
@@ -93,6 +100,7 @@
     <!-- Sommelier -->
     <section class="tab" id="tab-sommelier" hidden>
       <div class="card keycard" data-fam="red">
+        <button type="button" class="key-toggle" id="key-toggle" aria-expanded="false"></button>
         <h2>Sommelier agent <small>Claude, called directly from this page, with tools that query the relate graph in your browser. The graph is its knowledge and its memory.</small></h2>
         <div class="keyrow">
           <label for="api-key">Anthropic API key</label>
@@ -267,14 +275,15 @@
         </div>
       </div>
     </section>
+
+    <footer>
+      Beer data: <a href="https://nl.wikipedia.org/wiki/Lijst_van_Belgische_bieren" target="_blank" rel="noopener">Lijst van Belgische bieren</a>, Wikipedia contributors, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>.
+      Engine: <a href="https://relatedb.ai/" target="_blank" rel="noopener">relate</a> (Apache-2.0). After the original Neo4j beer graph demo by Rik Van Bruggen.
+      <span class="version" id="app-version"></span>
+      <br />An independent project for the <a href="https://relate.devpost.com/" target="_blank" rel="noopener">Relate by Neo4j Hackathon</a>, not endorsed by Neo4j. Source on <a href="https://github.com/rvanbruggen/neo4j-relatedb-beergraph" target="_blank" rel="noopener">GitHub</a>.
+    </footer>
   </main>
 
-  <footer>
-    Beer data: <a href="https://nl.wikipedia.org/wiki/Lijst_van_Belgische_bieren" target="_blank" rel="noopener">Lijst van Belgische bieren</a>, Wikipedia contributors, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>.
-    Engine: <a href="https://relatedb.ai/" target="_blank" rel="noopener">relate</a> (Apache-2.0). After the original Neo4j beer graph demo by Rik Van Bruggen.
-    <span class="version" id="app-version"></span>
-    <br />An independent project for the <a href="https://relate.devpost.com/" target="_blank" rel="noopener">Relate by Neo4j Hackathon</a>, not endorsed by Neo4j. Source on <a href="https://github.com/rvanbruggen/neo4j-relatedb-beergraph" target="_blank" rel="noopener">GitHub</a>.
-  </footer>
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
