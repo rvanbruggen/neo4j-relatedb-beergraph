@@ -2,6 +2,7 @@
 
 | Version | Date | Changes |
 |---|---|---|
+| **1.4.0** | 2026-11-26 | Installable as a progressive web app: web app manifest, home-screen icons (192, 512 and maskable 512 px) and a service worker, so the site can be added to a phone's home screen and runs full-screen. After one online visit it also works offline; the sommelier and the Wikipedia re-import still need a connection. |
 | **1.3.2** | 2026-11-24 | Saved relate store committed as `data/beergraph.relate` (the full graph plus a `demo` drinker with four ratings), with `data/README.md` on where the live OPFS store lives, how to load the file and its format. New README sections "How it uses Relate" (directory mode on OPFS, and why) and "Persistent store". The Devpost draft answers the Relate mode and store path questions. |
 | **1.3.1** | 2026-11-24 | Mondrian favicon (a glass of beer in an ink grid with red and blue tiles) and a matching home-screen icon for iPhone and iPad. The Devpost submission draft is now in `docs/`. |
 | **1.3.0** | 2026-11-24 | Backup and restore on the Data & storage tab: download relate's own OPFS store (graph, ratings and sommelier memory) as one gzipped `.relate` file, and upload it again in another browser or after clearing site data. Uploads are checked, and the previous graph is put back if relate cannot open the file. The engine line now shows relate's version from the build. |
