@@ -2,6 +2,7 @@
 
 | Version | Date | Changes |
 |---|---|---|
+| **1.5.0** | 2026-11-26 | Mobile layout for phones and the installed app: a slim header, a tab bar at the bottom (Cypher console, Data & storage and About under More), a Recommendations / Graph switch on Recommend so the neighbourhood graph fills the screen, a sommelier chat that fills the screen with the key settings folded away once a key is set, and a path graph that fills the space under the pickers. The desktop layout is unchanged. |
 | **1.4.0** | 2026-11-26 | Installable as a progressive web app: web app manifest, home-screen icons (192, 512 and maskable 512 px) and a service worker, so the site can be added to a phone's home screen and runs full-screen. After one online visit it also works offline; the sommelier and the Wikipedia re-import still need a connection. |
 | **1.3.2** | 2026-11-24 | Saved relate store committed as `data/beergraph.relate` (the full graph plus a `demo` drinker with four ratings), with `data/README.md` on where the live OPFS store lives, how to load the file and its format. New README sections "How it uses Relate" (directory mode on OPFS, and why) and "Persistent store". The Devpost draft answers the Relate mode and store path questions. |
 | **1.3.1** | 2026-11-24 | Mondrian favicon (a glass of beer in an ink grid with red and blue tiles) and a matching home-screen icon for iPhone and iPad. The Devpost submission draft is now in `docs/`. |
