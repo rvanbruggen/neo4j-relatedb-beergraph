@@ -38,6 +38,9 @@ used here only to name the product the project is built on.
   so you can clear your browser or switch machines and carry on later.
 - **Installable app (PWA)**: on a phone, use *Add to Home Screen* (iOS Safari)
   or *Install app* (Chrome on Android) to run it full-screen from its own icon.
+  On phones the layout is app-like: a slim header, a tab bar at the bottom
+  (Cypher console, Data and About sit under *More*), a list/graph switch on
+  Recommend, and a sommelier chat that fills the screen.
   After one online visit it also works offline; only the sommelier and the
   Wikipedia re-import need a connection.
 - **About**: the story behind the BeerGraph, links to the original BeerGraph
